@@ -1,9 +1,13 @@
 Package: MONSTER
 Type: Package
-Title: What the package does (short line)
+Title: Modeling Network State Transitions from Expression and Regulatory data
+    (MONSTER)
 Version: 1.0
 Date: 2016-04-04
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Author: Dan Schlauch
+Maintainer: Dan Schlauch <yourfault@somewhere.net>
+Description: Indentifies transcription factor drivers of state change from
+    expression data
+Imports: reshape2, ggplot2
 License: What license is it under?
+RoxygenNote: 5.0.1

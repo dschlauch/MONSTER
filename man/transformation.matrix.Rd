@@ -21,10 +21,5 @@ transformation.matrix(network.1, network.2, by.tfs = T, standardize = F,
 \description{
 This function analyzes a bi-partite network, such as a Transcription factor to gene network derived from the PANDA algorithm.
 }
-\examples{
-data(yeast.panda)
-t.matrix <- transformation.matrix(yeast.panda$cell.cycle, yeast.panda$stress.response)
-hcl.heatmap.plot(t.matrix, method="pearson")
-}
 \keyword{keywords}
 

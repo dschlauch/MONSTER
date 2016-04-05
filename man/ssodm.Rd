@@ -12,10 +12,5 @@ ssodm(tm)
 \description{
 This function calculates the off-diagonal sum of squared mass for a transition matrix
 }
-\examples{
-data(yeast.panda)
-t.matrix <- transformation.matrix(yeast.panda$cell.cycle, yeast.panda$stress.response)
-ssodm(t.matrix)
-}
 \keyword{keywords}
 

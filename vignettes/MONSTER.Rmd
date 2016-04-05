@@ -1,0 +1,50 @@
+---
+title: "An Introduction to the MONSTER package"
+author: "Daniel Schlauch"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{MONSTER Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+MONSTER (MOdeling Network State Transitions from Expression and Regulatory data) is a tool for identifying the transcription factor drivers of state change.
+
+MONSTER takes in sequence motif data linking transcription factors (TFs) to genes and gene expression from two conditions. The goal is generate bipartite networks from the gene expression data which quantify evidence of the regulatory roles of each of the TFs to each of the genes. Next, critical TFs are identified by computing a transition matrix, which maps the gene regulatory network in the first state to the gene regulatory network in the second state.
+
+The main method in MONSTER is the `monster` function.  This function has three required arguments, a gene expression matrix, a motif mapping data.frame, and a design integer vector containing only 0's and 1's (NAs allowed).
+
+In this demo, we use the included Yeast dataset, containing three separate Yeast datasets, and a sequence motif object.
+We will run monster to identify suspected TF drivers of the change from the cell cycle condition to the stress response condition. 
+
+```{r}
+library(MONSTER)
+data(yeast)
+design <- c(rep(0,ncol(yeast$exp.cc)), rep(1,ncol(yeast$exp.sr)))
+monsterRes <- monster(cbind(yeast$exp.cc, yeast$exp.sr), design, yeast$motif, nullPerms=10, numMaxCores=4)
+monsterRes
+```
+
+In addition to the three required arguments, we have specified that we will compute 10 randomized runs of the analysis to estimate our result's statistical signficance and have specified the number of cores to be used to be four to reduce computation time.
+
+Our result comes in the form of a monster object, which contains the estimated transition matrix as well as the transition matrices from the 10 null transitions.
+
+## Visualizing MONSTER results
+
+We can view the differential TF Involvement with the generic plot function
+
+```{r}
+plot(monsterRes)
+```
+
+We can view the transition matrix as a network via 
+
+```{r}
+transitionNetworkPlot(monsterRes)
+```
+
+Or run PCA on the transition matrix
+```{r}
+transitionPCAPlot(monsterRes)
+```

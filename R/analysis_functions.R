@@ -9,10 +9,6 @@
 #' @param method character specifying which algorithm to use, default='kabsch'
 #' @keywords keywords
 #' @export
-#' @examples
-#' data(yeast.panda)
-#' t.matrix <- transformation.matrix(yeast.panda$cell.cycle, yeast.panda$stress.response)
-#' hcl.heatmap.plot(t.matrix, method="pearson")
 transformation.matrix <- function(network.1, network.2, by.tfs=T, standardize=F, remove.diagonal=T, method="ols"){
   if(is.list(network.1)&&is.list(network.2)){
     if(by.tfs){
@@ -129,10 +125,6 @@ kabsch <- function(P,Q){
 #' @param tm a transition matrix for two bipartite networks
 #' @keywords keywords
 #' @export
-#' @examples
-#' data(yeast.panda)
-#' t.matrix <- transformation.matrix(yeast.panda$cell.cycle, yeast.panda$stress.response)
-#' ssodm(t.matrix)
 ssodm <-  function(tm){
   diag(tm)<-0
   sort(apply(tm,1,function(x){t(x)%*%x}))
@@ -237,8 +229,8 @@ hcl.heatmap.plot <- function(x, method="pearson"){
 #' data(yeast)
 #' monsterRes <- monster(yeast$exp.ko,c(rep(1,42),rep(0,49),rep(NA,15)),yeast$motif, nullPerms=10, numMaxCores=4)
 #' clusters <- kmeans(monsterRes@tm,3)$cluster # Color the nodes according to cluster membership
-#' pca.plot(monsterRes, title="PCA Plot of Transition - Cell Cycle vs Stress Response", clusters=clusters)
-pca.plot <-  function(monsterObj, title="PCA Plot of Transition", clusters=1, alpha=1){
+#' transitionPCAPlot(monsterRes, title="PCA Plot of Transition - Cell Cycle vs Stress Response", clusters=clusters)
+transitionPCAPlot <-  function(monsterObj, title="PCA Plot of Transition", clusters=1, alpha=1){
   require(ggplot2)
   tm.pca <- princomp(monsterObj@tm)
   odsm <- ssodm(monsterObj@tm)
@@ -252,6 +244,58 @@ pca.plot <-  function(monsterObj, title="PCA Plot of Transition", clusters=1, al
     ggtitle(title)
 }
 
+#' This function uses igraph to plot the transition matrix as a network
+#'
+#' @param monsterObj Monster Object
+#' @param numEdges The number of edges to display
+#' @param numTopTFs The number of TFs to display, ranked by largest dTFI
+#' @keywords keywords
+#' @export
+#' @examples
+#' data(yeast)
+#' monsterRes <- monster(yeast$exp.ko,c(rep(1,42),rep(0,49),rep(NA,15)),yeast$motif, nullPerms=10, numMaxCores=4)
+#' transitionNetworkPlot(monsterRes)
+#' 
+transitionNetworkPlot <- function(monsterObj, numEdges=100, numTopTFs=10){
+    require(reshape2)
+    require(igraph)
+    ## Calculate p-values for off-diagonals
+    transitionSigmas <- function(tm.observed, tm.null){
+        tm.null.mean <- apply(simplify2array(tm.null), 1:2, mean)
+        tm.null.sd <- apply(simplify2array(tm.null), 1:2, sd)
+        sigmas <- (tm.observed - tm.null.mean)/tm.null.sd
+    }
+    
+    tm.sigmas <- transitionSigmas(monsterObj@tm, monsterObj@nullTM)
+    diag(tm.sigmas) <- 0
+    tm.sigmas.melt <- melt(tm.sigmas)
+    
+    adjMat <- monsterObj@tm
+    diag(adjMat) <- 0
+    adjMat.melt <- melt(adjMat)
+    
+    adj.combined <- merge(tm.sigmas.melt, adjMat.melt, by=c("Var1","Var2"))
+    
+    # adj.combined[,1] <- mappings[match(adj.combined[,1], mappings[,1]),2]
+    # adj.combined[,2] <- mappings[match(adj.combined[,2], mappings[,1]),2]
+    
+    dTFI_pVals_All <- 1-2*abs(.5-calculate.tm.p.values(monsterObj, method="z-score"))
+    topTFsIncluded <- names(sort(dTFI_pVals_All)[1:numTopTFs])
+    topTFIndices <- 2>(is.na(match(adj.combined[,1],topTFsIncluded))+is.na(match(adj.combined[,2],topTFsIncluded)))
+    adj.combined <- adj.combined[topTFIndices,]
+    adj.combined <- adj.combined[abs(adj.combined[,4])>=sort(abs(adj.combined[,4]),decreasing=T)[numEdges],]
+    tfNet <- graph.data.frame(adj.combined, directed=T)
+    vSize <- -log(dTFI_pVals_All)
+    vSize[vSize<0] <- 0
+    vSize[vSize>3] <- 3
+    
+    V(tfNet)$size <- vSize[V(tfNet)$name]*5
+    V(tfNet)$color <- "yellow"
+    E(tfNet)$width <- (abs(E(tfNet)$value.x))*15/max(abs(E(tfNet)$value.x))
+    E(tfNet)$color<-ifelse(E(tfNet)$value.x>0, "blue", "red")
+    
+    plot.igraph(tfNet, edge.arrow.size=2, vertex.label.cex= 1.5, vertex.label.color= "black",main="")
+}
 #' This function plots the Off diagonal mass of an observed Transition Matrix compared to a set of null TMs
 #'
 #' @param monsterObj Monster Object
@@ -259,7 +303,7 @@ pca.plot <-  function(monsterObj, title="PCA Plot of Transition", clusters=1, al
 #' @export
 #' @examples
 #' example1
-ssodm.plot <- function(monsterObj, sort.by.sig=F, rescale=F, plot.title=NA, highlight.tfs=NA){
+dTFIPlot <- function(monsterObj, sort.by.sig=F, rescale=F, plot.title=NA, highlight.tfs=NA){
   require(ggplot2)
   if(is.na(plot.title)){
     plot.title <- "SSODM observed and null"

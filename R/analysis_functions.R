@@ -10,6 +10,7 @@
 #' @keywords keywords
 #' @export
 transformation.matrix <- function(network.1, network.2, by.tfs=T, standardize=F, remove.diagonal=T, method="ols"){
+    require(MASS)
   if(is.list(network.1)&&is.list(network.2)){
     if(by.tfs){
       net1 <- t(network.1$reg.net)

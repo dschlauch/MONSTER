@@ -2,7 +2,7 @@
 #'
 #' This function runs the MONSTER algorithm
 #'
-#' @param expr Expression dataset
+#' @param expr Gene Expression dataset
 #' @param design Binary vector indicating case control partition
 #' @param motif Regulatory data.frame
 #' @param nullPerms number of random permutations to run (default 100).  Set to 0 to only calculate observed transition matrix
@@ -22,6 +22,9 @@ monster <- function(expr, design, motif=NULL, nullPerms=100, numMaxCores=1, outp
     require(doParallel)
     require(foreach)
     
+    # Data type checking
+    expr <- checkDataType(expr)
+
     # Parallelize
     
     # Initiate cluster
@@ -47,31 +50,22 @@ monster <- function(expr, design, motif=NULL, nullPerms=100, numMaxCores=1, outp
     }
     
     # Remove unassigned data 
-    expr <- expr[design%in%c(0,1)]
+    expr <- expr[,design%in%c(0,1)]
     design <- design[design%in%c(0,1)]
     
     nullExpr <- expr
-    transMatrices <- foreach(i=1:iters,.packages=c("bereR","pandaR","reshape2","penalized","bptools")) %dopar% {
+    transMatrices <- foreach(i=1:iters,.packages=c("MONSTER","reshape2","penalized","MASS")) %dopar% {
         print(paste0("Running iteration ", i))
-        if(i==1){
-#             nullExpr <- expr
-        } else {
+        if(i!=1){
             nullExpr[] <- expr[sample(1:length(c(expr)))]
-#             rownames(nullExpr) <- rownames(nullExpr)[sample(1:nrow(nullExpr))]
         }
         nullExprCases <- nullExpr[,design==1]
         nullExprControls <- nullExpr[,design==0]
-#         # Some QC for sparse data
-#         if (sum(rowSums(nullExpr)==0)>0){
-#             zeroGenes <- which(rowSums(nullExpr)==0)
-#             for(gene in zeroGenes){
-#                 nullExpr[gene,] <- rnorm(ncol(nullExpr))
-#             }
-#         }
+
         tmpNetCases <- monsterNI(motif, nullExprCases)
         tmpNetControls <- monsterNI(motif, nullExprControls)
-        transitionMatrix <- transformation.matrix(tmpNetControls, tmpNetCases, remove.diagonal=T,method="ols")    
-        print(paste0("Finished running iteration", i))
+        transitionMatrix <- transformation.matrix(tmpNetControls, tmpNetCases, remove.diagonal=T, method="ols")    
+        print(paste("Finished running iteration", i))
         if (!is.na(outputDir)){
             saveRDS(transitionMatrix,file.path(outputDir,'tms',paste0('tm_',i,'.rds')))
         }
@@ -86,4 +80,17 @@ monster <- function(expr, design, motif=NULL, nullPerms=100, numMaxCores=1, outp
     gc()
     return(monsterObj(tm=transMatrices[[1]], nullTM=transMatrices[-1], numGenes=nrow(expr), numSamples=c(sum(design==0), sum(design==1))))
     
+}
+
+checkDataType <- function(expr){
+    requireNamespace("assertthat")
+    require(assertthat)
+    assert_that(is.data.frame(expr)||is.matrix(expr)||class(expr)=="ExpressionSet")
+    if(class(expr)=="ExpressionSet"){
+        expr <- exprs(expr)
+    }
+    if(is.data.frame(expr)){
+        expr <- as.matrix(expr)
+    }
+    expr
 }

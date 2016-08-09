@@ -1,5 +1,5 @@
 ---
-title: "An Introduction to the MONSTER package"
+title: "An Introduction to the MONSTER Package"
 author: "Daniel Schlauch"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -11,40 +11,77 @@ vignette: >
 
 MONSTER (MOdeling Network State Transitions from Expression and Regulatory data) is a tool for identifying the transcription factor drivers of state change.
 
+Specific cellular states are often associated with distinct gene expression patterns. These states are plastic, changing during development, or in the transition from health to disease. One relatively simple extension of this concept is to recognize that we can classify different cell-types by their active gene regulatory networks and that, consequently, transitions between cellular states can be modeled by changes in these underlying regulatory networks. This package is an implementation of MONSTER, MOdeling Network State Transitions from Expression and Regulatory data, a regression-based method for inferring transcription factor drivers of cell state conditions at the gene regulatory network level.
+
 MONSTER takes in sequence motif data linking transcription factors (TFs) to genes and gene expression from two conditions. The goal is generate bipartite networks from the gene expression data which quantify evidence of the regulatory roles of each of the TFs to each of the genes. Next, critical TFs are identified by computing a transition matrix, which maps the gene regulatory network in the first state to the gene regulatory network in the second state.
 
-The main method in MONSTER is the `monster` function.  This function has three required arguments, a gene expression matrix, a motif mapping data.frame, and a design integer vector containing only 0's and 1's (NAs allowed).
 
-In this demo, we use the included Yeast dataset, containing three separate Yeast datasets, and a sequence motif object.
-We will run monster to identify suspected TF drivers of the change from the cell cycle condition to the stress response condition. 
 
-```{r}
+
+
+```{r, message=F}
 library(MONSTER)
+```
+
+In this demo, we use the included Yeast dataset, containing three separate Yeast datasets, and a sequence motif object.  The    `yeast` dataset includes three separate experimental designs each involving microarray assays of 2555 genes of yeast (Saccharomyces cerevisiae).  `yeast$exp.ko` is a set of 106 gene expression samples of following a number of gene knockouts.  `yeast$exp.cc` is a set of 50 gene expression samples taken sets of two across 25 timepoints spanning the cellular cycle. `yeast$exp.sr` is a set of 173 gene expression samples collected under conditions of stress such as heat shock.
+
+In this tutorial, we will run `monster` to identify suspected TF drivers of the change from the early cell cycle to late cell cycle. 
+
+First, we load the data
+
+```{r, message=F}
 data(yeast)
-design <- c(rep(0,ncol(yeast$exp.cc)), rep(1,ncol(yeast$exp.sr)))
-monsterRes <- monster(cbind(yeast$exp.cc, yeast$exp.sr), design, yeast$motif, nullPerms=10, numMaxCores=4)
+```
+
+Next we create our design vector indicating to which group each sample belongs.  This vector must contain only 0's and 1's (NAs allowed). 
+
+In this example we are running the analysis on the first 10 timepoints compared to the last 10 timepoints, ignoring the middle 5 and replicates in this tutorial.
+
+```{r, message=F}
+design <- c(rep(0,20),rep(NA,10),rep(1,20))
+```
+
+The main method in MONSTER is the `monster` function.  This function has three required arguments, 
+* a gene expression matrix, `yeast$exp.cc` 
+* a motif mapping data.frame, `yeast$motif`
+* a design integer vector, `design` 
+
+MONSTER tests the statistical significance of its results by permuting the samples `n` times and rerunning the analysis for each permutation.  By default, the number of permutations is set to be 100 and can be manually set via the argument `nullPerms`.
+
+Monster is optimized to run on multiple cores, if available.  We can specify the maximum number of cores which are available to run the algorithm.  If `numMaxCores` unspecified, MONSTER will check available resources and run on all but four of the available cores.
+
+```{r, message=F}
+monsterRes <- monster(yeast$exp.cc, design, yeast$motif, nullPerms=100, numMaxCores=4)
 monsterRes
 ```
 
-In addition to the three required arguments, we have specified that we will compute 10 randomized runs of the analysis to estimate our result's statistical signficance and have specified the number of cores to be used to be four to reduce computation time.
 
-Our result comes in the form of a monster object, which contains the estimated transition matrix as well as the transition matrices from the 10 null transitions.
+In addition to the three required arguments, we have specified that we will compute 100 randomized runs of the analysis to estimate our result's statistical signficance.  MONSTER makes use of parallelization, and we have specified that 4 cores will be used in this analysis to reduce computation time.
+
+Our result comes in the form of a monster object, `monsterRes`, which contains the estimated transition matrix as well as the transition matrices from the 100 null transitions.
 
 ## Visualizing MONSTER results
 
-We can view the differential TF Involvement with the generic plot function
+Of interest is the degree to which the observed transition matrix differs from those obtained via random premutations of the samples.  We quantify this difference via differential TF Involvement, $dTFI$, defined as the sum of squared off-diagonal elements in each column of the transition matrix,
+$$\hat{dTFI_{j}}=\frac{\sum_{i=1}^{m}I\left(i\ne j\right)\hat{\tau}_{i,j}^{2}}{\sum_{i=1}^{m}\hat{\tau}_{i,j}^{2}}$$
 
-```{r}
+We can view the $dTFI$ with the generic `plot` function
+
+```{r, fig.width=10, fig.height=8, out.width = 600, out.height = 600, message=F}
 plot(monsterRes)
 ```
 
+In this plot, we have the $dTFI$ for each transcription factor along the x-axis.  The observed values are shown in red and the null values are shown in blue.  
+
+Due to the complex nature of the structure of gene regulatory networks, it is not uncommon to see transcription factors which exhibit a high degree of transitional change, but which is not statistically significant due to the high variability of that particular TF (e.g. YDR463W).  Conversely, some TFs show weak changes, but those changes are large compared to the changes observed in null transitions (e.g. YKL062W).  Ideally, we are most interested in TFs which demonstrate large changes in targetting pattern which is found to be strongly significant (e.g. YBL005W, YJL056C).
+
 We can view the transition matrix as a network via 
 
-```{r}
+```{r, fig.width=10, fig.height=8, out.width = 600, out.height = 600, message=F}
 transitionNetworkPlot(monsterRes)
 ```
 
 Or run PCA on the transition matrix
-```{r}
+```{r, fig.width=10, fig.height=8, out.width = 600, out.height = 600, message=F}
 transitionPCAPlot(monsterRes)
 ```

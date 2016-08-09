@@ -8,7 +8,7 @@ monster(expr, design, motif = NULL, nullPerms = 100, numMaxCores = 1,
   outputDir = NA, ...)
 }
 \arguments{
-\item{expr}{Expression dataset}
+\item{expr}{Gene Expression dataset}
 
 \item{design}{Binary vector indicating case control partition}
 

@@ -14,7 +14,7 @@
 #' plot(monsterRes)
 #' }
 plot.monster <- function(x, ...){
-    dTFIPlot(x)
+    dTFIPlot(x,...)
 }
 #' print.panda
 #'

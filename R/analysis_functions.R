@@ -135,7 +135,7 @@ ssodm <-  function(tm){
 #'
 #' This function plots a hierachically clustered heatmap and corresponding dendrogram of a transaction matrix
 #'
-#' @param net1 starting network, a genes by transcription factors data.frame with scores for confidence in the existence of edges between
+#' @param x monster Object
 #' @param method distance metric for hierarchical clustering.  Default is "Pearson correlation"
 #' @keywords keywords
 #' @export
@@ -144,8 +144,10 @@ ssodm <-  function(tm){
 #' t.matrix <- transformation.matrix(yeast.panda$cell.cycle, yeast.panda$stress.response)
 #' hcl.heatmap.plot(t.matrix, method="pearson")
 hcl.heatmap.plot <- function(x, method="pearson"){
+  assert_that(class(x)=="monster")
+  x <- x@tm
   if(method=="pearson"){
-    dist.func <- pearson.dist
+    dist.func <- function(y) as.dist(cor(y))
   } else {
     dist.func <- dist
   }
@@ -234,7 +236,7 @@ hcl.heatmap.plot <- function(x, method="pearson"){
 transitionPCAPlot <-  function(monsterObj, title="PCA Plot of Transition", clusters=1, alpha=1){
   require(ggplot2)
   tm.pca <- princomp(monsterObj@tm)
-  odsm <- ssodm(monsterObj@tm)
+  odsm <- apply(monsterObj@tm,2,function(x){t(x)%*%x})
   odsm.scaled <- 2*(odsm-mean(odsm))/sd(odsm)+4
   scores.pca <- as.data.frame(tm.pca$scores)
   scores.pca <- cbind(scores.pca,'node.names'=rownames(scores.pca))
@@ -304,20 +306,20 @@ transitionNetworkPlot <- function(monsterObj, numEdges=100, numTopTFs=10){
 #' @export
 #' @examples
 #' example1
-dTFIPlot <- function(monsterObj, sort.by.sig=F, rescale=F, plot.title=NA, highlight.tfs=NA){
+dTFIPlot <- function(monsterObj, rescale=F, plot.title=NA, highlight.tfs=NA){
   require(ggplot2)
   if(is.na(plot.title)){
-    plot.title <- "SSODM observed and null"
+    plot.title <- "Differential TF Involvement"
   }
   num.iterations <- length(monsterObj@nullTM)
   # Calculate the off-diagonal squared mass for each transition matrix
   null.SSODM <- lapply(monsterObj@nullTM,function(x){
-    apply(x,1,function(y){t(y)%*%y})
+    apply(x,2,function(y){t(y)%*%y})
   })
   null.ssodm.matrix <- matrix(unlist(null.SSODM),ncol=num.iterations)
   null.ssodm.matrix <- t(apply(null.ssodm.matrix,1,sort))
 
-  ssodm <- apply(monsterObj@tm,1,function(x){t(x)%*%x})
+  ssodm <- apply(monsterObj@tm,2,function(x){t(x)%*%x})
 
   # Get p-value (rank of observed within null ssodm)
   #   p.values <- sapply(1:length(ssodm),function(i){
@@ -357,7 +359,7 @@ dTFIPlot <- function(monsterObj, sort.by.sig=F, rescale=F, plot.title=NA, highli
     scale_x_discrete(limits = x.axis.order ) +
     theme_classic() +
     theme(legend.title=element_blank(),axis.text.x = element_text(colour = 1+x.axis.order%in%highlight.tfs, angle = 90, hjust = 1, size=x.axis.size,face="bold")) +
-    ylab("Sum of Squared Off-Diagonal Mass") +
+    ylab("dTFI") +
     ggtitle(plot.title)
 
 }

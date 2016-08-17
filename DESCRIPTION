@@ -9,7 +9,7 @@ Maintainer: Dan Schlauch <dschlauch@fas.harvard.edu>
 Description: Indentifies transcription factor drivers of state change from
     expression data
 Imports: reshape2, 
-    ggplot2,
+    ggplot2, ggdendro, grid,
     MASS,
     igraph,
     assertthat,

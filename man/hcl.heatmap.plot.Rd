@@ -7,9 +7,9 @@
 hcl.heatmap.plot(x, method = "pearson")
 }
 \arguments{
-\item{method}{distance metric for hierarchical clustering.  Default is "Pearson correlation"}
+\item{x}{monster Object}
 
-\item{net1}{starting network, a genes by transcription factors data.frame with scores for confidence in the existence of edges between}
+\item{method}{distance metric for hierarchical clustering.  Default is "Pearson correlation"}
 }
 \description{
 This function plots a hierachically clustered heatmap and corresponding dendrogram of a transaction matrix

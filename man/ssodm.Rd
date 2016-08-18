@@ -9,8 +9,16 @@ ssodm(tm)
 \arguments{
 \item{tm}{a transition matrix for two bipartite networks}
 }
+\value{
+vector containined the sum of squared off diagonal mass, dTFI
+}
 \description{
 This function calculates the off-diagonal sum of squared mass for a transition matrix
+}
+\examples{
+mat <- matrix(rnorm(100),ncol=10)
+ssodm(mat)
+
 }
 \keyword{keywords}
 

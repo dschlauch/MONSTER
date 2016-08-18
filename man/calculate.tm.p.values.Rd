@@ -11,11 +11,15 @@ calculate.tm.p.values(monsterObj, method = "z-score")
 
 \item{method}{one of 'z-score' or 'non-parametric'}
 }
+\value{
+vector of p-values for each transcription factor
+}
 \description{
-This function calculates the significance of an observed transition matrix given a set of null transition matrices
+This function calculates the significance of an observed
+transition matrix given a set of null transition matrices
 }
 \examples{
-example1
+1+1
 }
 \keyword{keywords}
 

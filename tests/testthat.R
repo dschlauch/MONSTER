@@ -1,4 +1,3 @@
-library(testthat)
 library(MONSTER)
 
-test_check("MONSTER")
+testthat::test_check("MONSTER")

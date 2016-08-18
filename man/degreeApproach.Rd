@@ -7,13 +7,17 @@
 degreeApproach(motifs)
 }
 \arguments{
-\item{motif}{A motif dataset, a data.frame, matrix or exprSet containing 3 columns. Each row describes an motif associated with a transcription factor (column 1) a gene (column 2) and a score (column 3) for the motif.}
+\item{motif}{A motif dataset, a data.frame, matrix or exprSet 
+containing 3 columns. Each row describes an motif associated 
+with a transcription factor (column 1) a gene (column 2) and 
+a score (column 3) for the motif.}
 }
 \value{
 network
 }
 \description{
-This function creates an unsophisticated graph based solely on the node degrees
+This function creates an unsophisticated graph based solely on 
+the node degrees
 }
 \examples{
 1+1

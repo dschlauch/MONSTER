@@ -90,10 +90,10 @@ In this plot, we have the $dTFI$ for each transcription factor along the x-axis.
 
 Due to the complex nature of the structure of gene regulatory networks, it is not uncommon to see transcription factors which exhibit a high degree of transitional change, but which is not statistically significant due to the high variability of that particular TF (e.g. YDR463W).  Conversely, some TFs show weak changes, but those changes are large compared to the changes observed in null transitions (e.g. YKL062W).  Ideally, we are most interested in TFs which demonstrate large changes in targetting pattern which is found to be strongly significant (e.g. YJL056C).
 
-Adding the argument `sort.by.sig=T`, sorts the x-axis so that the most significant transcription factors are on the left.
+Adding the argument `sort.by.sig=TRUE`, sorts the x-axis so that the most significant transcription factors are on the left.
 
 ```{r, fig.width=10, fig.height=8, out.width = 750, out.height = 600, message=F}
-plot(monsterRes, rescale=T)
+plot(monsterRes, rescale=TRUE)
 ```
 
 Our top hit here is YDL056W, which reassuringly is established in the literature as being involved in regulation of cell cycle progression from G1 to S phase [Koch C, et al. (1993)]
@@ -108,7 +108,7 @@ where $\textbf{E}$ is the $p\times m$ error matrix which we are minimizing.
 
 ```{r, fig.width=10, fig.height=8, out.width = 750, out.height = 600, message=F}
 library(gplots)
-heatmap.2(monsterRes@tm, col = "bluered",
+heatmap.2(slot(monsterRes, 'tm'), col = "bluered",
 density.info="none",  
 trace="none", 
 dendrogram='none',     
@@ -131,18 +131,18 @@ A network visualization of the strongest 20 transitions identified based on the 
 Furthermore, we are often interested in correlated targetting pattern sharing.  To find clusters of transcription factor transitions, we can plot the set of TFs onto the first two principal components taken from the transition matrix.
 
 ```{r, fig.width=10, fig.height=8, out.width = 750, out.height = 600, message=F}
-  require(ggplot2)
-  tm.pca <- princomp(monsterRes@tm)
-  odsm <- apply(monsterRes@tm,2,function(x){t(x)%*%x})
-  odsm.scaled <- (odsm-mean(odsm))/sd(odsm)+4
-  scores.pca <- as.data.frame(tm.pca$scores)
-  scores.pca <- cbind(scores.pca,'node.names'=rownames(scores.pca))
-  ggplot(data = scores.pca, aes(x = Comp.1, y = Comp.2, label = node.names)) +
-    geom_hline(yintercept = 0, colour = "gray65") +
-    geom_vline(xintercept = 0, colour = "gray65") +
-    geom_text(size = odsm.scaled) +
-    expand_limits(x=c(-.6,.7))+
-    ggtitle("PCA of transitions of Cell Cycle Transcription Factors in Yeast")
+    require(ggplot2)
+    tm.pca <- princomp(slot(monsterRes, 'tm'))
+    odsm <- apply(slot(monsterRes, 'tm'),2,function(x){t(x)%*%x})
+    odsm.scaled <- (odsm-mean(odsm))/sd(odsm)+4
+    scores.pca <- as.data.frame(tm.pca$scores)
+    scores.pca <- cbind(scores.pca,'node.names'=rownames(scores.pca))
+    ggplot(data = scores.pca, aes(x = Comp.1, y = Comp.2, label = node.names)) +
+        geom_hline(yintercept = 0, colour = "gray65") +
+        geom_vline(xintercept = 0, colour = "gray65") +
+        geom_text(size = odsm.scaled) +
+        expand_limits(x=c(-.6,.7))+
+        ggtitle("PCA of transitions of Cell Cycle Transcription Factors in Yeast")
 ```
 
 The above plot can also be achieved using the included `MONSTER` function, `transitionPCAPlot(monsterRes)`.

@@ -4,27 +4,33 @@
 \alias{monsterNI}
 \title{Bipartite Edge Reconstruction from Expression data}
 \usage{
-monsterNI(motif.data, expr.data, verbose = F, randomize = "none",
-  method = "cd", score = "motifincluded", cpp = F)
+monsterNI(motif.data, expr.data, verbose = FALSE, randomize = "none",
+  method = "cd", score = "motifincluded", cpp = FALSE)
 }
 \arguments{
 \item{verbose}{logical to indicate printing of output for algorithm progress.}
 
-\item{method}{String to indicate algorithm method.  Must be one of "cd","lda", or "wcd". Default is correlation difference "cd".}
+\item{method}{String to indicate algorithm method.  Must be one of 
+"cd","lda", or "wcd". Default is correlation difference "cd".}
 
-\item{score}{String to indicate whether motif information will be readded upon completion of the algorithm}
+\item{score}{String to indicate whether motif information will be 
+readded upon completion of the algorithm}
 
 \item{cpp}{logical use C++ for maximum speed, set to false if unable to run.}
 
-\item{motif}{A motif dataset, a data.frame, matrix or exprSet containing 3 columns. Each row describes an motif associated with a transcription factor (column 1) a gene (column 2) and a score (column 3) for the motif.}
+\item{motif}{A motif dataset, a data.frame, matrix or exprSet containing 
+3 columns. Each row describes an motif associated with a transcription 
+factor (column 1) a gene (column 2) and a score (column 3) for the motif.}
 
-\item{expr}{An expression dataset, as a genes (rows) by samples (columns) data.frame}
+\item{expr}{An expression dataset, as a genes (rows) by samples (columns)
+data.frame}
 }
 \value{
-TBD, An object of class "bere" (currently matrix or data.frame)
+matrix for inferred network between TFs and genes
 }
 \description{
-This function generates a complete bipartite network from gene expression data and sequence motif data
+This function generates a complete bipartite network from 
+gene expression data and sequence motif data
 }
 \examples{
 data(yeast)

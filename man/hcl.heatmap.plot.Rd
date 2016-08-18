@@ -9,10 +9,15 @@ hcl.heatmap.plot(x, method = "pearson")
 \arguments{
 \item{x}{monster Object}
 
-\item{method}{distance metric for hierarchical clustering.  Default is "Pearson correlation"}
+\item{method}{distance metric for hierarchical clustering.
+Default is "Pearson correlation"}
+}
+\value{
+ggplot2 object for transition matrix heatmap
 }
 \description{
-This function plots a hierachically clustered heatmap and corresponding dendrogram of a transaction matrix
+This function plots a hierachically clustered heatmap and 
+corresponding dendrogram of a transaction matrix
 }
 \examples{
 data(yeast.panda)

@@ -13,12 +13,17 @@ transitionNetworkPlot(monsterObj, numEdges = 100, numTopTFs = 10)
 
 \item{numTopTFs}{The number of TFs to display, ranked by largest dTFI}
 }
+\value{
+igraph object for transition matrix
+}
 \description{
 This function uses igraph to plot the transition matrix as a network
 }
 \examples{
 data(yeast)
-monsterRes <- monster(yeast$exp.ko,c(rep(1,42),rep(0,49),rep(NA,15)),yeast$motif, nullPerms=10, numMaxCores=4)
+monsterRes <- monster(yeast$exp.ko,
+    c(rep(1,42),rep(0,49),rep(NA,15)),
+    yeast$motif, nullPerms=10, numMaxCores=4)
 transitionNetworkPlot(monsterRes)
 
 }

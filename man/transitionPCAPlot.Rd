@@ -12,18 +12,27 @@ transitionPCAPlot(monsterObj, title = "PCA Plot of Transition",
 
 \item{clusters}{A vector indicating the colors to be plotted for each node}
 
-\item{alpha}{A vector indicating the level of transparency to be plotted for each node}
+\item{alpha}{A vector indicating the level of transparency to be plotted 
+for each node}
 
 \item{tm}{a transition matrix for a bipartite network}
 }
+\value{
+ggplot2 object for transition matrix PCA
+}
 \description{
-This function plots the first two principal components for a transaction matrix
+This function plots the first two principal components for a 
+transaction matrix
 }
 \examples{
 data(yeast)
-monsterRes <- monster(yeast$exp.ko,c(rep(1,42),rep(0,49),rep(NA,15)),yeast$motif, nullPerms=10, numMaxCores=4)
-clusters <- kmeans(monsterRes@tm,3)$cluster # Color the nodes according to cluster membership
-transitionPCAPlot(monsterRes, title="PCA Plot of Transition - Cell Cycle vs Stress Response", clusters=clusters)
+monsterRes <- monster(yeast$exp.ko,c(rep(1,42),rep(0,49),rep(NA,15)),
+    yeast$motif, nullPerms=10, numMaxCores=4)
+# Color the nodes according to cluster membership
+clusters <- kmeans(slot(monsterRes, 'tm'),3)$cluster 
+transitionPCAPlot(monsterRes, 
+title="PCA Plot of Transition - Cell Cycle vs Stress Response", 
+clusters=clusters)
 }
 \keyword{keywords}
 

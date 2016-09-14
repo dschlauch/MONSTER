@@ -29,7 +29,10 @@ This function analyzes a bi-partite network, such as a Transcription factor
 to gene network derived from the PANDA algorithm.
 }
 \examples{
-1+1
+data(yeast)
+cc.net <- monsterNI(yeast$motif,yeast$exp.cc)
+sr.net <- monsterNI(yeast$motif,yeast$exp.sr)
+transformation.matrix(cc.net, sr.net)
 }
 \keyword{keywords}
 

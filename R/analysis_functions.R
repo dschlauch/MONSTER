@@ -17,7 +17,10 @@
 #' @importFrom testthat test_that
 #' @export
 #' @examples
-#' 1+1
+#' data(yeast)
+#' cc.net <- monsterNI(yeast$motif,yeast$exp.cc)
+#' sr.net <- monsterNI(yeast$motif,yeast$exp.sr)
+#' transformation.matrix(cc.net, sr.net)
 transformation.matrix <- function(network.1, network.2, by.tfs=TRUE, standardize=FALSE, 
                                 remove.diagonal=TRUE, method="ols"){
     require(MASS)
@@ -49,10 +52,6 @@ transformation.matrix <- function(network.1, network.2, by.tfs=TRUE, standardize
         tf.trans.matrix <- svd.net2$v %*% diag(1/svd.net2$d) %*% t(svd.net2$u) %*% net1
     }
     if (method == "ols"){
-        # rewrote 'same column priority' feature
-        #         colFactor <- colSums(net1)/colSums(net2)
-        #         net2.star <- net2-sweep(net1, 2, colFactor, '*')
-
         # 9/14/15
         # re-rewrote 'same column priority' feature
         net2.star <- sapply(1:ncol(net1), function(i,x,y){
@@ -162,9 +161,10 @@ ssodm <-    function(tm){
 #' @import grid
 #' @return ggplot2 object for transition matrix heatmap
 #' @examples
-#' data(yeast.panda)
-#' t.matrix <- transformation.matrix(yeast.panda$cell.cycle, yeast.panda$stress.response)
-#' hcl.heatmap.plot(t.matrix, method="pearson")
+#' data(yeast)
+#' cc.net <- monsterNI(yeast$motif,yeast$exp.cc)
+#' sr.net <- monsterNI(yeast$motif,yeast$exp.sr)
+#' transformation.matrix(cc.net, sr.net)
 hcl.heatmap.plot <- function(x, method="pearson"){
     assert_that(class(x)=="monster")
     x <- x@tm

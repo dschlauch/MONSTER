@@ -20,9 +20,10 @@ This function plots a hierachically clustered heatmap and
 corresponding dendrogram of a transaction matrix
 }
 \examples{
-data(yeast.panda)
-t.matrix <- transformation.matrix(yeast.panda$cell.cycle, yeast.panda$stress.response)
-hcl.heatmap.plot(t.matrix, method="pearson")
+data(yeast)
+cc.net <- monsterNI(yeast$motif,yeast$exp.cc)
+sr.net <- monsterNI(yeast$motif,yeast$exp.sr)
+transformation.matrix(cc.net, sr.net)
 }
 \keyword{keywords}
 

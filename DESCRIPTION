@@ -15,10 +15,10 @@ Imports: reshape2,
     igraph,
     assertthat,
     testthat
-License: What license is it under?
+License: GPL-2
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown,
     testthat,
     Biobase
-VignetteBuilder: knitr
+VignetteBuilder: rmarkdown

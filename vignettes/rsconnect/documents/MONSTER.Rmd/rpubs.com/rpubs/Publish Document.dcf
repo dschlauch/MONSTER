@@ -1,7 +1,0 @@
-name: Publish Document
-account: rpubs
-server: rpubs.com
-appId: https://api.rpubs.com/api/v1/document/201297/67f1fab68d45425fbec5294b25769ee1
-bundleId: https://api.rpubs.com/api/v1/document/201297/67f1fab68d45425fbec5294b25769ee1
-url: http://rpubs.com/dschlauch/201297
-when: 1471471370.70595

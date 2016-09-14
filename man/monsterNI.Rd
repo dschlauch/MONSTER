@@ -5,13 +5,16 @@
 \title{Bipartite Edge Reconstruction from Expression data}
 \usage{
 monsterNI(motif.data, expr.data, verbose = FALSE, randomize = "none",
-  method = "cd", score = "motifincluded", cpp = FALSE)
+  method = "bere", alphaw = 0.5, score = "motifincluded", cpp = FALSE)
 }
 \arguments{
 \item{verbose}{logical to indicate printing of output for algorithm progress.}
 
 \item{method}{String to indicate algorithm method.  Must be one of 
-"cd","lda", or "wcd". Default is correlation difference "cd".}
+"bere","pearson","panda","cd","lda", or "wcd". Default is "bere"}
+
+\item{alphaw}{A weight parameter specifying proportion of weight 
+to give to indirect compared to direct evidence.  See documentation.}
 
 \item{score}{String to indicate whether motif information will be 
 readded upon completion of the algorithm}
@@ -24,6 +27,8 @@ factor (column 1) a gene (column 2) and a score (column 3) for the motif.}
 
 \item{expr}{An expression dataset, as a genes (rows) by samples (columns)
 data.frame}
+
+\item{verbose}{logical to indicate printing of output for}
 }
 \value{
 matrix for inferred network between TFs and genes

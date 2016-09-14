@@ -10,9 +10,12 @@
 #'  data.frame
 #' @param verbose logical to indicate printing of output for algorithm progress.
 #' @param method String to indicate algorithm method.  Must be one of 
-#' "cd","lda", or "wcd". Default is correlation difference "cd".
+#' "bere","pearson","panda","cd","lda", or "wcd". Default is "bere"
 #' @param score String to indicate whether motif information will be 
 #' readded upon completion of the algorithm
+#' @param alphaw A weight parameter specifying proportion of weight 
+#' to give to indirect compared to direct evidence.  See documentation.
+#' @param verbose logical to indicate printing of output for 
 #' @param cpp logical use C++ for maximum speed, set to false if unable to run.
 #' @keywords keywords
 #' @export
@@ -23,7 +26,8 @@ monsterNI <- function(motif.data,
                     expr.data,
                     verbose=FALSE,
                     randomize="none",
-                    method="cd",
+                    method="bere",
+                    alphaw=.5,
                     score="motifincluded",
                     cpp=FALSE){
     if(verbose)
@@ -108,24 +112,66 @@ monsterNI <- function(motif.data,
     
     if(verbose)
         print('Main calculation')
+    result <- NULL
     ########################################
-    
-    strt<-Sys.time()
-    # Remove NA correlations
-    gene.coreg[is.na(gene.coreg)] <- 0
-    correlation.dif <- sweep(regulatory.network,1,rowSums(regulatory.network),`/`)%*%
-        gene.coreg - 
-        sweep(1-regulatory.network,1,rowSums(1-regulatory.network),`/`)%*%
-        gene.coreg
-    result <- sweep(correlation.dif, 2, apply(correlation.dif, 2, sd),'/')
-    #   regulatory.network <- ifelse(res>quantile(res,1-mean(regulatory.network)),1,0)
-    
-    print(Sys.time()-strt)
-    ########################################
-    if(score=="motifincluded"){
-        result <- result + max(result)*regulatory.network
+    if (method=="BERE"){
+        ## Get direct evidence
+        directCor <- t(cor(t(exprData),t(exprData[rownames(exprData)%in%tfNames,]))^2)
+        
+        ## Get the indirect evidence    
+        result <- t(apply(tfdcast, 1, function(x){
+            cat(".")
+            tfTargets <- as.numeric(x)
+            
+            # Ordinary Logistic Reg
+            #         z <- glm(tfTargets ~ ., data=exprData, family="binomial")
+            
+            # Penalized Logistic Reg
+            z <- penalized(tfTargets, exprData, 
+                           lambda2=lambda, model="logistic", standardize=TRUE)
+            #         z <- optL1(tfTargets, exprData, minlambda1=25, fold=5)
+            
+            
+            predict(z, exprData)
+        }))
+        
+        ## Convert values to ranks
+        directCor <- matrix(rank(directCor), ncol=ncol(directCor))
+        result <- matrix(rank(result), ncol=ncol(result))
+        
+        consensus <- directCor*(1-alphaw) + result*alphaw
+        rownames(consensus) <- rownames(tfdcast)
+        colnames(consensus) <- rownames(exprData)
+        consensusRange <- max(consensus)- min(consensus)
+        if(score=="motifincluded"){
+            consensus <- as.matrix(consensus + consensusRange*tfdcast)
+        }
+        consensus
+    } else if (method=="pearson"){
+        result <- t(cor(t(exprData),t(exprData[rownames(exprData)%in%tfNames,]))^2)
+        if(score=="motifincluded"){
+            result <- as.matrix(consensus + consensusRange*tfdcast)
+        }
+        result
+    } else {
+        strt<-Sys.time()
+        # Remove NA correlations
+        gene.coreg[is.na(gene.coreg)] <- 0
+        correlation.dif <- sweep(regulatory.network,1,rowSums(regulatory.network),`/`)%*%
+            gene.coreg - 
+            sweep(1-regulatory.network,1,rowSums(1-regulatory.network),`/`)%*%
+            gene.coreg
+        result <- sweep(correlation.dif, 2, apply(correlation.dif, 2, sd),'/')
+        #   regulatory.network <- ifelse(res>quantile(res,1-mean(regulatory.network)),1,0)
+        
+        print(Sys.time()-strt)
+        ########################################
+        if(score=="motifincluded"){
+            result <- result + max(result)*regulatory.network
+        }
+        result
     }
-    result
+    return(result)
 }
 
 #' Bipartite Edge Reconstruction from Expression data (LDA method)
